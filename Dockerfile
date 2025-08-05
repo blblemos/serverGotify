@@ -1,5 +1,5 @@
 # Etapa 1: builder
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /build
 
@@ -20,11 +20,10 @@ RUN apk add --no-cache ca-certificates tzdata
 
 WORKDIR /app
 
-# Copia o binário
+# Copia o binário e a UI compilada
 COPY --from=builder /build/gotify /app/gotify
 COPY --from=builder /build/ui /app/ui
 
-# Volume para persistência de dados
 VOLUME /app/data
 
 ENV GOTIFY_SERVER_PORT=80 \
