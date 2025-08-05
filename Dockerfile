@@ -1,28 +1,14 @@
-# Etapa 1: Compilar a interface web
-FROM node:18-alpine AS ui-builder
+# Usa a imagem oficial já com a UI compilada
+FROM gotify/server:v2.6.3
 
+# Define o diretório de trabalho (opcional, mas pode ajudar em personalizações futuras)
 WORKDIR /app
-RUN apk add --no-cache git
-RUN git clone --branch v2.6.3 https://github.com/gotify/server.git .
-WORKDIR /app/ui
-RUN npm install && npm run build
 
-# Etapa 2: Compilar o servidor Go
-FROM golang:1.23-alpine AS builder
+# Garante que a pasta de dados exista (ponto de montagem para persistência)
+VOLUME ["/app/data"]
 
-WORKDIR /app
-COPY --from=ui-builder /app /app
-WORKDIR /app
-RUN go mod tidy && go build -ldflags="-w -s" -o gotify .
-
-# Etapa 3: Imagem final
-FROM alpine:latest
-
-RUN apk add --no-cache ca-certificates tzdata
-
-WORKDIR /app
-COPY --from=builder /app/gotify .
-COPY --from=ui-builder /app/ui/build ./build
-
+# Expõe a porta padrão do Gotify
 EXPOSE 80
-CMD ["./gotify"]
+
+# O entrypoint padrão da imagem oficial já inicia o servidor corretamente
+# ENTRYPOINT ["./gotify-linux-arm64"] (já está definido internamente)
