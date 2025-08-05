@@ -1,23 +1,24 @@
-# Etapa 1: build da UI e do backend
+# Etapa 1: Build do backend e UI
 FROM golang:1.21-alpine AS builder
+
+# Instala dependências do sistema para Go e NodeJS
+RUN apk add --no-cache git nodejs npm python3 make g++
 
 WORKDIR /app
 
-# Instala dependências
-RUN apk add --no-cache git nodejs npm
-
-# Clona o repositório do Gotify
+# Clona a versão desejada do repositório Gotify
 RUN git clone --branch v2.6.3 https://github.com/gotify/server.git .
 
-# Compila o frontend (UI)
+# Build do frontend (UI)
 WORKDIR /app/ui
-RUN npm install && npm run build
+RUN npm install
+RUN npm run build
 
-# Compila o backend (Go)
+# Build do backend Go
 WORKDIR /app
 RUN go build -o gotify
 
-# Etapa 2: imagem final
+# Etapa 2: Imagem final mais leve
 FROM alpine:latest
 
 RUN apk add --no-cache ca-certificates tzdata
