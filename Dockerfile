@@ -1,35 +1,49 @@
-# Etapa 1: Build do backend e UI
-FROM golang:1.21-alpine AS builder
+# Stage 1: Builder Node.js (frontend React)
+FROM node:20.19.0-alpine AS builder-ui
 
-# Instala dependências do sistema para Go e NodeJS
-RUN apk add --no-cache git nodejs npm python3 make g++
-
-WORKDIR /app
-
-# Clona a versão desejada do repositório Gotify
-RUN git clone --branch v2.6.3 https://github.com/gotify/server.git .
-
-# Build do frontend (UI)
 WORKDIR /app/ui
+
+# Dependências para compilação (se precisar de python, make, etc, pode adicionar)
+RUN apk add --no-cache python3 make g++
+
+COPY ui/package*.json ./
 RUN npm install
+
+COPY ui/ ./
+
+# Definindo variável para contornar erro OpenSSL
+ENV NODE_OPTIONS=--openssl-legacy-provider
+
 RUN npm run build
 
-# Build do backend Go
-WORKDIR /app
-RUN go build -o gotify
+# Stage 2: Builder Go (backend)
+FROM golang:1.21-alpine AS builder-go
 
-# Etapa 2: Imagem final mais leve
+WORKDIR /app/backend
+
+COPY backend/go.mod backend/go.sum ./
+RUN go mod download
+
+COPY backend/ ./
+
+RUN go build -o /app/backend/server
+
+# Stage 3: Final image (runtime)
 FROM alpine:latest
 
-RUN apk add --no-cache ca-certificates tzdata
+# Instalar CA certs para HTTPS e outras libs se necessário
+RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
 
-COPY --from=builder /app/gotify .
-COPY --from=builder /app/ui/build ./ui
+# Copiar backend compilado
+COPY --from=builder-go /app/backend/server ./server
 
-VOLUME ["/app/data"]
+# Copiar frontend build para servir (se usar algum servidor estático)
+COPY --from=builder-ui /app/ui/build ./ui/build
 
-EXPOSE 80
+# Se seu backend servir frontend, configure conforme necessário
+# EX: expor porta e comando para rodar backend
+EXPOSE 8080
 
-CMD ["./gotify"]
+CMD ["./server"]
