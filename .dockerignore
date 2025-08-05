@@ -1,9 +1,1 @@
-vendor/
-.idea/
-build/
-licenses/
-coverage.txt
-data/
-images/
-.git/
-*/node_modules/
+
