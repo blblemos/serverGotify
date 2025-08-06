@@ -13,7 +13,7 @@ RUN yarn build
 
 
 # --- Go Builder ---
-FROM golang:1.22-alpine AS go-builder
+FROM golang:1.24-alpine AS go-builder
 
 # Instala dependências C para compilar sqlite3
 RUN apk add --no-cache git make bash gcc musl-dev sqlite-dev
