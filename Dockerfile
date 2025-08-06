@@ -15,7 +15,10 @@ RUN yarn build
 # --- Go Builder ---
 FROM golang:1.23-alpine AS go-builder
 
-RUN apk add --no-cache git make bash
+# Instala dependências C para compilar sqlite3
+RUN apk add --no-cache git make bash gcc musl-dev sqlite-dev
+
+ENV CGO_ENABLED=1
 
 WORKDIR /src/gotify
 
@@ -36,14 +39,13 @@ WORKDIR /app
 # Copia o binário primeiro
 COPY --from=go-builder /target/app/gotify-app ./gotify-app
 
-# Instala binutils e realiza o strip depois que o binário existe
+# Instala binutils + curl e realiza o strip
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends binutils && \
+    apt-get install -y --no-install-recommends binutils curl && \
     strip --strip-unneeded gotify-app && \
     apt-get purge -y binutils && \
     rm -rf /var/lib/apt/lists/*
 
-# Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s \
   CMD curl --fail http://localhost:$GOTIFY_SERVER_PORT/health || exit 1
 
