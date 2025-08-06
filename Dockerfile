@@ -7,6 +7,7 @@ COPY ./ui/package*.json ./
 RUN yarn install
 
 COPY ./ui ./
+ENV NODE_OPTIONS=--openssl-legacy-provider
 RUN yarn build
 
 
