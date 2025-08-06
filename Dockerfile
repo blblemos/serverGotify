@@ -8,6 +8,7 @@ RUN yarn install
 
 COPY ./ui ./
 ENV NODE_OPTIONS=--openssl-legacy-provider
+RUN yarn add @babel/core@^7.22.0 --dev
 RUN yarn build
 
 
