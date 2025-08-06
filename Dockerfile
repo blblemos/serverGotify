@@ -15,40 +15,33 @@ RUN yarn build
 # --- Go Builder ---
 FROM golang:1.23-alpine AS go-builder
 
-# Instala git, make e bash
 RUN apk add --no-cache git make bash
 
 WORKDIR /src/gotify
 
-# Copia o código do projeto
 COPY . .
-
-# Copia o frontend build gerado
 COPY --from=js-builder /src/gotify/ui/build ./ui/build
 
-# Executa o build com Makefile
 RUN make OUTPUT=/target/app/gotify-app _build_within_docker
 
 
 # --- Imagem final para produção ---
-FROM debian:sid-slim
+FROM debian:sid-slim AS final
 
 ARG GOTIFY_SERVER_EXPOSE=80
 ENV GOTIFY_SERVER_PORT=$GOTIFY_SERVER_EXPOSE
 
 WORKDIR /app
 
+# Copia o binário primeiro
+COPY --from=go-builder /target/app/gotify-app ./gotify-app
+
+# Instala binutils e realiza o strip depois que o binário existe
 RUN apt-get update && \
     apt-get install -y --no-install-recommends binutils && \
     strip --strip-unneeded gotify-app && \
     apt-get purge -y binutils && \
     rm -rf /var/lib/apt/lists/*
-
-# Copia binário gerado
-COPY --from=go-builder /target/app/gotify-app ./gotify-app
-
-# Opcional: reduz o tamanho do binário
-RUN strip --strip-unneeded gotify-app
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s \
