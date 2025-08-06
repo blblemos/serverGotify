@@ -31,7 +31,7 @@ RUN make OUTPUT=/target/app/gotify-app _build_within_docker
 # --- Imagem final para produção ---
 FROM debian:sid-slim AS final
 
-ARG GOTIFY_SERVER_EXPOSE=80
+ARG GOTIFY_SERVER_EXPOSE=3000
 ENV GOTIFY_SERVER_PORT=$GOTIFY_SERVER_EXPOSE
 
 WORKDIR /app
