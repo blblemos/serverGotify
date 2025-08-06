@@ -13,7 +13,7 @@ RUN yarn build
 
 
 # --- Go Builder ---
-FROM golang:1.21-alpine AS go-builder
+FROM golang:1.23-alpine AS go-builder
 
 # Instala git, make e bash
 RUN apk add --no-cache git make bash
