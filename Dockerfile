@@ -15,12 +15,10 @@ RUN yarn build
 # --- Go Builder ---
 FROM golang:1.21-alpine AS go-builder
 
+# Instala git, make e bash
 RUN apk add --no-cache git make bash
 
 WORKDIR /src/gotify
-
-# Instala ferramentas necessárias
-RUN apk add --no-cache git make
 
 # Copia o código do projeto
 COPY . .
@@ -46,6 +44,9 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
 
 # Copia binário gerado
 COPY --from=go-builder /target/app/gotify-app ./gotify-app
+
+# Opcional: reduz o tamanho do binário
+RUN strip --strip-unneeded gotify-app
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s \
