@@ -16,7 +16,7 @@ RUN yarn build
 FROM golang:1.24-bullseye AS go-builder
 
 # Instala dependências C para compilar sqlite3
-RUN apk add --no-cache git make bash gcc musl-dev sqlite-dev
+RUN apt-get update && apt-get install -y git make bash gcc sqlite3 libsqlite3-dev
 
 ENV CGO_ENABLED=1
 
