@@ -15,6 +15,8 @@ RUN yarn build
 # --- Go Builder ---
 FROM golang:1.21-alpine AS go-builder
 
+RUN apk add --no-cache git make bash
+
 WORKDIR /src/gotify
 
 # Instala ferramentas necessárias
