@@ -38,8 +38,10 @@ ENV GOTIFY_SERVER_PORT=$GOTIFY_SERVER_EXPOSE
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -yq --no-install-recommends \
-    curl tzdata ca-certificates && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends binutils && \
+    strip --strip-unneeded gotify-app && \
+    apt-get purge -y binutils && \
     rm -rf /var/lib/apt/lists/*
 
 # Copia binário gerado
